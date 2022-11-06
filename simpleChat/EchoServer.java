@@ -3,6 +3,8 @@
 // license found at www.lloseng.com 
 
 
+import java.io.IOException;
+
 import ocsf.server.*;
 
 /**
@@ -48,8 +50,20 @@ public class EchoServer extends AbstractServer
   public void handleMessageFromClient
     (Object msg, ConnectionToClient client)
   {
-    System.out.println("Message received: " + msg + " from " + client);
-    this.sendToAllClients(msg);
+
+    if(msg.toString().startsWith("#login") && client.getInfo("loginid") == null){
+      client.setInfo("loginid", msg.toString().substring(6));
+    }else if(msg.toString().startsWith("#login")){
+      try {
+        client.sendToClient("ERROR: USER ALREADY LOGGED IN!");
+        client.close();
+      } catch (IOException e) {
+        e.printStackTrace();
+      }
+    } else{
+      System.out.println("Message received: " + msg + " from " + client);
+      this.sendToAllClients(client.getInfo("loginid").toString().concat(">").concat(msg.toString()));
+    }
   }
     
   /**
@@ -82,7 +96,7 @@ public class EchoServer extends AbstractServer
     System.out.println("Client: "+client.getName()+" with ID: "+Long.toString(client.getId())+" Has Disconnected!");
   }
 
-  
+
   
   //Class methods ***************************************************
   

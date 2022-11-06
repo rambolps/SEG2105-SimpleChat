@@ -26,6 +26,8 @@ public class ChatClient extends AbstractClient {
    */
   ChatIF clientUI;
 
+  String loginid;
+
   // Constructors ****************************************************
 
   /**
@@ -36,11 +38,19 @@ public class ChatClient extends AbstractClient {
    * @param clientUI The interface type variable.
    */
 
-  public ChatClient(String host, int port, ChatIF clientUI)
+  public ChatClient(String host, int port, String loginid, ChatIF clientUI)
       throws IOException {
     super(host, port); // Call the superclass constructor
     this.clientUI = clientUI;
+    this.loginid = loginid;
     openConnection();
+    try {
+      sendToServer("#login".concat(loginid));
+    } catch (IOException e) {
+      clientUI.display("Could not send message to server.  Terminating client.");
+      quit();
+    }
+    
   }
 
   // Instance methods ************************************************
@@ -57,7 +67,7 @@ public class ChatClient extends AbstractClient {
   private void ClientCommands(String message) {
     switch (message.substring(1)) {
       case "quit":
-        System.out.println("Closing Application...");
+        clientUI.display("Closing Application...");
         quit();
         break;
       case "logoff":
@@ -69,17 +79,17 @@ public class ChatClient extends AbstractClient {
       case "sethost":
         if (!this.isConnected()) {
           this.setHost(message.substring(9));
-          System.out.println("Host Set To: " + message.substring(9));
+          clientUI.display("Host Set To: " + message.substring(9));
         } else {
-          System.out.println("Error: Client Is Currently Logged In");
+          clientUI.display("Error: Client Is Currently Logged In");
         }
         break;
       case "setport":
         if (!this.isConnected()) {
           this.setPort(Integer.parseInt(message.substring(9)));
-          System.out.println("Port Set To: " + message.substring(9));
+          clientUI.display("Port Set To: " + message.substring(9));
         } else {
-          System.out.println("Error: Client Is Currently Logged In");
+          clientUI.display("Error: Client Is Currently Logged In");
         }
         break;
       case "login":
@@ -90,17 +100,17 @@ public class ChatClient extends AbstractClient {
             e.printStackTrace();
           }
         } else {
-          System.out.println("Error: Client Is Currently Logged In");
+          clientUI.display("Error: Client Is Currently Logged In");
         }
         break;
       case "gethost":
-        System.out.println("Host Is Set To: "+getHost());
+        clientUI.display("Host Is Set To: " + getHost());
         break;
       case "getport":
-        System.out.println("Port Is Set To: "+Integer.toString(getPort()));
+        clientUI.display("Port Is Set To: " + Integer.toString(getPort()));
         break;
       default:
-        System.out.println("Sorry Command: " + message.substring(1) + " Does Not Exist!");
+        clientUI.display("Sorry Command: " + message.substring(1) + " Does Not Exist!");
         break;
     }
   }
